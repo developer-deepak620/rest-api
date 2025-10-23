@@ -1,0 +1,58 @@
+const express = require("express");
+const cors = require("cors");
+const multer = require("multer");
+const {MongoClient} = require("mongodb");
+const client = new MongoClient("mongodb+srv://deepakkumar456992:123%40deepak@cluster0.gexspmq.mongodb.net/");
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use("/public", express.static(__dirname + "/public"));
+
+
+let storage = multer.diskStorage({
+    destination:function(req,file,cb){
+        cb(null,__dirname+"/public")
+    },
+    filename:function(req,file,cb){
+        cb(null,file.originalname)
+    }
+});
+let upload = multer({storage:storage});
+
+
+app.get("/products",async(req,res)=>{
+
+    await client.connect();
+    let db = client.db("rest_api");
+    let coll = db.collection("products");
+    let resp = await coll.find().toArray();
+
+    res.json(resp);
+});
+
+app.post("/products",upload.single("image"),async(req,res)=>{
+
+    let data = req.body;
+
+    
+    let image = "";
+    if(req.file){
+        image=req.file.originalname;
+    }else{
+        image="";
+    }
+    data.image = image;
+    console.log(data);
+    
+
+    await client.connect();
+    let db = client.db("rest_api");
+    let coll = db.collection("products");
+    let resp = await coll.insertOne(data);
+
+    console.log("product name is "+data.title);
+
+    res.json({msg:"Success! New Product Inserted!!",data:resp});
+});
+
+app.listen(8000,()=>console.log("server started on port 8000"));
