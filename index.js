@@ -30,10 +30,10 @@ app.get("/products",async(req,res)=>{
     res.json(resp);
 });
 
+
 app.post("/products",upload.single("image"),async(req,res)=>{
 
     let data = req.body;
-
     
     let image = "";
     if(req.file){
@@ -53,6 +53,19 @@ app.post("/products",upload.single("image"),async(req,res)=>{
     console.log("product name is "+data.title);
 
     res.json({msg:"Success! New Product Inserted!!",data:resp});
+});
+
+
+app.get("/products/:id",async(req,res)=>{
+
+    let id = parseInt(req.params.id);
+
+    await client.connect();
+    let db = client.db("rest_api");
+    let coll = db.collection("products");
+    let resp = await coll.find({id:id}).toArray();
+
+    res.json(resp[0]);
 });
 
 app.listen(8000,()=>console.log("server started on port 8000"));
