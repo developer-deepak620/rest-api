@@ -97,6 +97,20 @@ app.post("/user",async(req,res)=>{
                                                                                 
 });
 
+
+app.get("/user/:id",async(req,res)=>{
+
+    let id = req.params.id;
+    await client.connect();
+    let db = client.db("rest_api");
+    let user = db.collection("user");
+
+    let resp = await user.find({_id:ObjectId.createFromHexString(id)}).toArray(); 
+
+    res.json(resp[0]);
+});
+
+
 app.delete("/user/:id",async(req,res)=>{
 
     let id = req.params.id;
